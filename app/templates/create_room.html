@@ -6,14 +6,14 @@
   <title>Document</title>
 </head>
 <body>
-  <h1>Login</h1>
+  <h1>Create Room</h1>
   <h3>{{ message }}</h3>
-  <form method="post" action="/login">
-    <label for="">Username:</label>
-    <input type="text" name="username" id="">
+  <form method="post" action="/create_room">
+    <label for="">Room Name:</label>
+    <input type="text" name="room_name" id="">
     <br>
-    <label for="">Password:</label>
-    <input type="password" name="password" id="">
+    <label for="">Members:</label>
+    <input type="text" name="members">
     <br>
     <button type="submit">Submit</button>
   </form>

@@ -54,7 +54,7 @@ class Room:
     def save_room(room_name, created_by):
         room_id = rooms_collection.insert_one(
             {
-                "room_name": room_name,
+                "name": room_name,
                 "created_by": created_by,
                 "created_at": datetime.now(),
             }
@@ -66,13 +66,22 @@ class Room:
 
     @staticmethod
     def get_room(room_id):
-        rooms_collection.find_one({"_id": ObjectId(room_id)})
+        return rooms_collection.find_one({"_id": ObjectId(room_id)})
+
+    @staticmethod
+    def update_room(room_id, room_name):
+        rooms_collection.update_one(
+            {"_id": ObjectId(room_id)}, {"$set": {"name": room_name}}
+        )
+        room_members_collection.update_many(
+            {"_id.room_id": ObjectId(room_id)}, {"$set": {"room_name": room_name}}
+        )
 
     @staticmethod
     def add_room_member(room_id, room_name, username, added_by, is_room_admin=False):
         room_members_collection.insert_one(
             {
-                "_id": {"room_id": room_id, "username": username},
+                "_id": {"room_id": ObjectId(room_id), "username": username},
                 "room_name": room_name,
                 "added_by": added_by,
                 "added_at": datetime.now(),
@@ -85,7 +94,7 @@ class Room:
         room_members_collection.insert_many(
             [
                 {
-                    "_id": {"room_id": room_id, "username": username},
+                    "_id": {"room_id": ObjectId(room_id), "username": username},
                     "room_name": room_name,
                     "added_by": added_by,
                     "added_at": datetime.now(),
@@ -93,4 +102,46 @@ class Room:
                 }
                 for username in usernames
             ]
+        )
+
+    @staticmethod
+    def get_room_members(room_id):
+        return list(room_members_collection.find({"_id.room_id": ObjectId(room_id)}))
+
+    @staticmethod
+    def get_rooms_for_user(username):
+        return list(room_members_collection.find({"_id.username": username}))
+
+    @staticmethod
+    def remove_room_members(room_id, usernames):
+        room_members_collection.delete_many(
+            {
+                "_id": {
+                    "$in": [
+                        {"room_id": ObjectId(room_id), "username": username}
+                        for username in usernames
+                    ]
+                }
+            }
+        )
+
+    @staticmethod
+    def is_room_member(room_id, username):
+        return (
+            room_members_collection.count_documents(
+                {"_id": {"room_id": ObjectId(room_id), "username": username}}
+            )
+            > 0
+        )
+
+    @staticmethod
+    def is_room_admin(room_id, username):
+        return (
+            room_members_collection.count_documents(
+                {
+                    "_id": {"room_id": ObjectId(room_id), "username": username},
+                    "is_room_admin": True,
+                }
+            )
+            > 0
         )
