@@ -7,7 +7,11 @@
 <body>
 <h1>Welcome to chat room: {{ room.name }}</h1>
 
-<div id="messages"></div>
+<div id="messages">
+    {% for message in messages %}
+        <div><b>{{ message.sender }}:&nbsp;</b>{{ message.text }}</div>
+    {% endfor %}
+</div>
 
 <form id="message_input_form">
     <input type="text" id="message_input" placeholder="Enter your message here">
