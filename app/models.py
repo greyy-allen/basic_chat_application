@@ -7,6 +7,7 @@ from .db import (
     messages_collection,
 )
 from bson.objectid import ObjectId
+from pymongo import DESCENDING
 
 
 class User:
@@ -152,6 +153,9 @@ class Room:
         )
 
 
+MESSAGE_FETCH_LIMIT = 3
+
+
 class Message:
     def __init__(self, message_id, text, sender, room_id):
         self.message_id = message_id
@@ -171,5 +175,14 @@ class Message:
         )
 
     @staticmethod
-    def get_messages(room_id):
-        return list(messages_collection.find({"room_id": ObjectId(room_id)}))
+    def get_messages(room_id, page=0):
+        offset = page * MESSAGE_FETCH_LIMIT
+        messages = list(
+            messages_collection.find({"room_id": ObjectId(room_id)})
+            .sort("_id", DESCENDING)
+            .limit(MESSAGE_FETCH_LIMIT)
+            .skip(offset)
+        )
+        for message in messages:
+            message["created_at"] = message["created_at"].strftime("%d %b, %H:%M")
+        return messages[::-1]
