@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from flask_login import login_required, current_user
 from .models import Room, Message
+from bson.json_util import dumps
 
 main = Blueprint("main", __name__)
 
@@ -28,6 +29,19 @@ def view_room(room_id):
             room_members=room_members,
             messages=messages,
         )
+    else:
+        return "Room not found", 404
+
+
+@main.route("/rooms/<room_id>/messages/")
+@login_required
+def get_older_messages(room_id):
+    room = Room.get_room(room_id)
+    print(room)
+    if room and Room.is_room_member(room_id, current_user.username):
+        page = int(request.args.get("page", 0))
+        messages = Message.get_messages(room_id, page)
+        return dumps(messages)
     else:
         return "Room not found", 404
 

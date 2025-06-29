@@ -1,4 +1,5 @@
 from flask_socketio import join_room, leave_room
+from datetime import datetime
 from .models import Message
 
 
@@ -18,6 +19,7 @@ def register_socket_handlers(socketio, app):
                 data["username"], data["room"], data["message"]
             )
         )
+        data["created_at"] = datetime.now().strftime("%d %b, %H:%M")
         Message.save_message(data["room"], data["message"], data["username"])
         socketio.emit("receive_message", data, room=data["room"])
 
