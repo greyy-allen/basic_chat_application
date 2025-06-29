@@ -1,6 +1,11 @@
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
-from .db import rooms_collection, users_collection, room_members_collection
+from .db import (
+    rooms_collection,
+    users_collection,
+    room_members_collection,
+    messages_collection,
+)
 from bson.objectid import ObjectId
 
 
@@ -145,3 +150,26 @@ class Room:
             )
             > 0
         )
+
+
+class Message:
+    def __init__(self, message_id, text, sender, room_id):
+        self.message_id = message_id
+        self.text = text
+        self.sender = sender
+        self.room_id = room_id
+
+    @staticmethod
+    def save_message(room_id, text, sender):
+        messages_collection.insert_one(
+            {
+                "room_id": ObjectId(room_id),
+                "text": text,
+                "sender": sender,
+                "created_at": datetime.now(),
+            }
+        )
+
+    @staticmethod
+    def get_messages(room_id):
+        return list(messages_collection.find({"room_id": ObjectId(room_id)}))

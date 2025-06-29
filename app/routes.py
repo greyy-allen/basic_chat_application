@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from flask_login import login_required, current_user
-from .models import Room
+from .models import Room, Message
 
 main = Blueprint("main", __name__)
 
@@ -20,11 +20,13 @@ def view_room(room_id):
     print(room)
     if room and Room.is_room_member(room_id, current_user.username):
         room_members = Room.get_room_members(room_id)
+        messages = Message.get_messages(room_id)
         return render_template(
             "view_room.html",
             room=room,
             username=current_user.username,
             room_members=room_members,
+            messages=messages,
         )
     else:
         return "Room not found", 404
